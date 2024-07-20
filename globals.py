@@ -5,3 +5,21 @@ USER_STATES = {
     3: 'muted',
     4: 'left',
 }
+THREADS = {
+    'GREETING_THREAD': 17,
+    '': None,
+    '': None,
+    '': None,
+}
+KARMA_THANKS = (
+    '+',
+    'спасибо',
+    'спс',
+    'спасиб',
+    'благодарю',
+    'сяп',
+    'сяб',
+)
+KARMA_CONDEMNATION = (
+    '-',
+)

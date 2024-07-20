@@ -5,6 +5,24 @@ import peewee
 import telebot
 
 
+def get_user_karma(user: telebot.types.User):
+    """func to get user's karma
+
+    Args:
+        user (telebot.types.User): user.
+
+    Returns:
+        int | None: int if there's no errors, none if exception is raised.
+    """
+    check_user_in_database(user)
+    try:
+        _user = database.User.select().where(database.User.id == str(user.id)).get()
+        return _user.karma
+    except Exception as exception:
+        logging.error(exception)
+        return None
+    
+        
 def check_user_in_database(user: telebot.types.User):
     """check if user in database. if not - add him.
 
@@ -35,7 +53,7 @@ def add_new_user_to_database(user: telebot.types.User):
                          warns=0,
                          state=0,
                         )
-    logging.info(f"Added new user: {user.full_name} ({user.username} with id={user.id})")
+    logging.info(f"Added new user: {user.full_name} ({user.username} with id={user.id}).")
 
 
 def change_user_karma(user: telebot.types.User, amount: int = 1):
