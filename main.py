@@ -117,7 +117,7 @@ async def get_user_stats(message):
 @bot.message_handler(chat_types=['supergroup'], func=lambda message: True)
 async def listen_to_karma(message):
     # govnokod starts here.
-    if message.text.startswith(globals.KARMA_THANKS):
+    if message.text.lower().startswith(globals.KARMA_THANKS):
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самовлюбленный дурак, но не нужно этого.')
             return
@@ -125,7 +125,7 @@ async def listen_to_karma(message):
         karma.check_user_in_database(message.reply_to_message.from_user)
         karma.change_user_karma(message.reply_to_message.from_user)
         await bot.reply_to(message, f'{message.from_user.first_name} ({karma.get_user_karma(message.from_user)}) повысил карму {message.reply_to_message.from_user.first_name} ({karma.get_user_karma(message.reply_to_message.from_user)}).')
-    elif message.text.startswith(globals.KARMA_CONDEMNATION):
+    elif message.text.lower().startswith(globals.KARMA_CONDEMNATION):
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самокритичный дурак, но не нужно этого.')
             return
