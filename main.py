@@ -117,6 +117,8 @@ async def get_user_stats(message):
 @bot.message_handler(chat_types=['supergroup'], func=lambda message: True)
 async def listen_to_karma(message):
     # govnokod starts here.
+    if not message.reply_to_message:
+        return
     if message.text.lower().startswith(globals.KARMA_THANKS):
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самовлюбленный дурак, но не нужно этого.')
