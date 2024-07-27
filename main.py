@@ -4,7 +4,9 @@ import globals
 import karma
 
 import asyncio
+import datetime
 import logging
+import re
 import telebot.async_telebot
 import string
 
@@ -28,6 +30,11 @@ async def get_message_reply_user(message):
 async def start(message):
     await bot.send_message(message.chat.id, 'Привет, я Годетта, работаю пока что только в группе, личку не люблю...')
     
+
+@bot.message_handler(chat_types=['supergroup',], commands=['help'])
+async def help_message(message):
+    await bot.reply_to(message, f'Вот что я умею:\n\nКоманды для админов:\n/warn - выдать предупреждение нарушителю. На четвертое предупреждение я автоматически поставлю мут.\n/mute [days=int|None]- замутить персонажа.\n/unmute - помиловать нарушителя.\n/ban - просто бан.\n\nКоманды для всех:\n/stats - посмотреть свою статистику или другого человека, ответив на его сообщение.\n/help - спросить у меня, что я умею.')
+
 
 @bot.message_handler(chat_types=['supergroup',], content_types=['new_chat_members'])
 async def welcome_message(message):
@@ -58,7 +65,25 @@ async def welcome_message(message):
 async def clear_leave_message(message):
     await bot.delete_message(message.chat.id, message.id)
     
-
+    
+@bot.message_handler(chat_types=['supergroup'], commands=['mute'])
+async def mute_user(message):
+    admins = await bot.get_chat_administrators(message.chat.id)
+    admins_id = [id.user.id for id in admins]
+    if message.from_user.id in admins_id:
+        if message.reply_to_message.from_user.id in admins_id:
+            await bot.reply_to(message, 'Господа админы, прошу выяснять отношения в личных сообщениях.')
+            return
+        mute_after = re.findall(r'\d+', message.text)
+        if mute_after:
+            mute_after = datetime.datetime.now() + datetime.timedelta(days=int(mute_after[0]))
+        else:
+            mute_after = None
+        await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, mute_after)
+        await bot.reply_to(message, f'Ня\-няя, окей, [{message.reply_to_message.from_user.first_name}](tg://user?id={message.reply_to_message.from_user.id}), ты теперь в муте на \.',
+                           parse_mode='MarkdownV2')
+        
+        
 @bot.message_handler(chat_types=['supergroup'], commands=['warn'])
 async def warn_user(message):
     admins = await bot.get_chat_administrators(message.chat.id)
@@ -76,7 +101,7 @@ async def warn_user(message):
                                            None, False, False, False, False, False, False,
                                            False, False)
         else:
-            await bot.reply_to(message, f'Пользователь {message.reply_to_message.from_user.full_name} ({karma.get_user_karma(message.reply_to_message.from_user)}) получил предупреждение.\nСейчас их {database.get_warns_count(message.reply_to_message.from_user)}.')
+            await bot.reply_to(message, f'Пользователь {message.reply_to_message.from_user.full_name} ({karma.get_user_karma(message.reply_to_message.from_user)}) получил предупреждение.\nСейчас их {database.get_warns_count(message.reply_to_message.from_user)}. Когда их будет 4 - я выдам тебе мут.')
         
 
 @bot.message_handler(chat_types=['supergroup'], commands=['unmute'])
