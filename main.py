@@ -76,11 +76,12 @@ async def mute_user(message):
             return
         mute_after = re.findall(r'\d+', message.text)
         if mute_after:
+            days = mute_after[0]
             mute_after = datetime.datetime.now() + datetime.timedelta(days=int(mute_after[0]))
         else:
             mute_after = None
         await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, mute_after)
-        await bot.reply_to(message, f'Ня\-няя, окей, [{message.reply_to_message.from_user.first_name}](tg://user?id={message.reply_to_message.from_user.id}), ты теперь в муте на \.',
+        await bot.reply_to(message, f'Ня\-няя, окей, [{message.reply_to_message.from_user.first_name}](tg://user?id={message.reply_to_message.from_user.id}), ты теперь в муте на {days if days else "НАВСЕГДА"}\.',
                            parse_mode='MarkdownV2')
         
         
