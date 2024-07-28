@@ -19,6 +19,8 @@ bot = telebot.async_telebot.AsyncTeleBot(config.BOT_TOKEN)
 
 async def get_message_reply_user(message):
     user = None
+    if not message.reply_to_message.text:
+        return
     if message.reply_to_message:
         user = message.reply_to_message.from_user
         if message.reply_to_message.from_user.is_bot:
