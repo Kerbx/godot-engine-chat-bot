@@ -11,7 +11,6 @@ db = peewee.SqliteDatabase('users.db')
 class User(peewee.Model):
     id = peewee.CharField()
     name = peewee.CharField()
-    username = peewee.CharField()
     karma = peewee.IntegerField()
     warns = peewee.IntegerField()
     state = peewee.IntegerField()
@@ -32,7 +31,7 @@ def give_warn(user: telebot.types.User):
     _user.warns += 1
     try:
         _user.save()
-        logging.info(f'User {user.full_name} ({user.username}) got warn (now {get_warns_count(user)})!')
+        logging.info(f'User {user.full_name} got warn (now {get_warns_count(user)})!')
     except Exception as exception:
         logging.error(exception)
         return 'err'
@@ -47,7 +46,7 @@ def clear_warns(user: telebot.types.User):
     _user.warns = 0
     try:
         _user.save()
-        logging.info(f'User {user.full_name} ({user.username}) forgiven.')
+        logging.info(f'User {user.full_name} forgiven.')
     except Exception as exception:
         logging.error(exception)
     
