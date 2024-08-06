@@ -85,13 +85,12 @@ def add_new_user_to_database(user: telebot.types.User):
     database.User.create(id=str(user.id),
                          name=str(user.first_name),
                          karma=0,
-                         username=user.username,
                          warns=0,
                          state=0,
                          increase_karma=0,
                          decrease_karma=0,
                         )
-    logging.info(f"Added new user: {user.full_name} ({user.username} with id={user.id}).")
+    logging.info(f"Added new user: {user.full_name} with id={user.id}).")
 
 
 def change_user_karma(target_user: telebot.types.User, from_user: telebot.types.User,  amount: int = 1):
@@ -112,7 +111,7 @@ def change_user_karma(target_user: telebot.types.User, from_user: telebot.types.
     try:
         _target_user.save()
         _from_user.save()
-        logging.info(f"Changed karma for user: {target_user.full_name} ({target_user.username}), now karma = {_target_user.karma}")
+        logging.info(f"Changed karma for user: {target_user.full_name}, now karma = {_target_user.karma}")
     except Exception as exception:
         logging.error(exception)
         
