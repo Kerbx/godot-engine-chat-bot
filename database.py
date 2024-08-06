@@ -15,7 +15,8 @@ class User(peewee.Model):
     karma = peewee.IntegerField()
     warns = peewee.IntegerField()
     state = peewee.IntegerField()
-    
+    increase_karma = peewee.IntegerField()
+    decrease_karma = peewee.IntegerField()
     class Meta:
         database = db
         

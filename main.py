@@ -19,6 +19,8 @@ bot = telebot.async_telebot.AsyncTeleBot(config.BOT_TOKEN)
 
 async def get_message_reply_user(message):
     user = None
+    if not message.reply_to_message.text:
+        return
     if message.reply_to_message:
         user = message.reply_to_message.from_user
         if message.reply_to_message.from_user.is_bot:
@@ -81,7 +83,7 @@ async def mute_user(message):
         else:
             mute_after = None
         await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, mute_after)
-        await bot.reply_to(message, f'Ня\-няя, окей, [{message.reply_to_message.from_user.first_name}](tg://user?id={message.reply_to_message.from_user.id}), ты теперь в муте на {days if days else "НАВСЕГДА"}\.',
+        await bot.reply_to(message, f'Ня\-няя, окей, [{message.reply_to_message.from_user.first_name}](tg://user?id={message.reply_to_message.from_user.id}), ты теперь в муте на {days + " дней" if days else "НАВСЕГДА"}\.',
                            parse_mode='MarkdownV2')
         
         
@@ -114,8 +116,8 @@ async def unmute_user(message):
             await bot.reply_to(message, 'Господа админы, прошу выяснять отношения в личных сообщениях.')
             return
         database.clear_warns(message.reply_to_message.from_user)
-        await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id,
-                                       None, True, True,)
+        await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, None,
+                                       True, True, True, True)
         await bot.reply_to(message, f'Так и быть, выходи из молчанки, [{message.reply_to_message.from_user.first_name}](tg://user?id={message.reply_to_message.from_user.id})\.',
                            parse_mode='MarkdownV2')
         
@@ -137,7 +139,7 @@ async def ban_user(message):
 async def get_user_stats(message):
     user = await get_message_reply_user(message)
     user = message.from_user if not user else user
-    await bot.reply_to(message, f'Карма пользователя {user.full_name} сейчас составляет {karma.get_user_karma(user)}.')
+    await bot.reply_to(message, f'Карма пользователя {user.full_name} сейчас составляет {karma.get_user_karma(user)}.\nПовышал другим карму {karma.get_increase_times(user)} раз(а).\nПонижал другим карму {karma.get_decrease_times(user)} раз(а).')
 
 
 @bot.message_handler(chat_types=['supergroup'], func=lambda message: True)
@@ -149,17 +151,23 @@ async def listen_to_karma(message):
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самовлюбленный дурак, но не нужно этого.')
             return
+        elif message.reply_to_message.from_user.is_bot:
+            await bot.reply_to(message, "У меня отобрали карму... Мне ее нельзя менять.")
+            return
         karma.check_user_in_database(message.from_user)
         karma.check_user_in_database(message.reply_to_message.from_user)
-        karma.change_user_karma(message.reply_to_message.from_user)
+        karma.change_user_karma(message.reply_to_message.from_user, message.from_user)
         await bot.reply_to(message, f'{message.from_user.first_name} ({karma.get_user_karma(message.from_user)}) повысил карму {message.reply_to_message.from_user.first_name} ({karma.get_user_karma(message.reply_to_message.from_user)}).')
     elif message.text.lower().startswith(globals.KARMA_CONDEMNATION):
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самокритичный дурак, но не нужно этого.')
             return
+        elif message.reply_to_message.from_user.is_bot:
+            await bot.reply_to(message, "У меня отобрали карму... Мне ее нельзя менять.")
+            return
         karma.check_user_in_database(message.from_user)
         karma.check_user_in_database(message.reply_to_message.from_user)
-        karma.change_user_karma(message.reply_to_message.from_user, -1)
+        karma.change_user_karma(message.reply_to_message.from_user, message.from_user, -1)
         await bot.reply_to(message, f'{message.from_user.first_name} ({karma.get_user_karma(message.from_user)}) понизил карму {message.reply_to_message.from_user.first_name} ({karma.get_user_karma(message.reply_to_message.from_user)}).')
 
 
