@@ -6,7 +6,7 @@ USER_STATES = {
     4: 'left',
 }
 THREADS = {
-    'GREETING_THREAD': 35,
+    'GREETING_THREAD': 1365,
     '': None,
     '': None,
     '': None,

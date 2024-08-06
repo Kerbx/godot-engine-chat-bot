@@ -81,6 +81,7 @@ async def mute_user(message):
             days = mute_after[0]
             mute_after = datetime.datetime.now() + datetime.timedelta(days=int(mute_after[0]))
         else:
+            days = None
             mute_after = None
         await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, mute_after)
         await bot.reply_to(message, f'Ня\-няя, окей, [{message.reply_to_message.from_user.first_name}](tg://user?id={message.reply_to_message.from_user.id}), ты теперь в муте на {days + " дней" if days else "НАВСЕГДА"}\.',
@@ -132,7 +133,7 @@ async def ban_user(message):
             return
         await bot.ban_chat_member(message.chat.id, message.reply_to_message.from_user.id)
         await bot.reply_to(message, f'Пользователь {message.reply_to_message.from_user.full_name} теперь забанен. Мы не жалеем.')
-        logging.info(f'User {message.reply_to_message.from_user.full_name} ({message.reply_to_message.from_user.username}) got banned.')        
+        logging.info(f'User {message.reply_to_message.from_user.full_name} got banned.')        
 
 
 @bot.message_handler(chat_types=['supergroup'], commands=['stats'])
