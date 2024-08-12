@@ -148,29 +148,25 @@ async def get_reaction(message_reaction_updated):
         return
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_THANKS_EMOJI:
         temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id)
+        await bot.delete_message(temp_message.chat.id, temp_message.id)
         if temp_message.reply_to_message.message_thread_id != globals.THREADS['SHOWCASE_THREAD'] or globals.THREADS['MATERIALS_THREAD']:
-            await bot.delete_message(temp_message.chat.id, temp_message.id)
             return
         if temp_message.reply_to_message.from_user.id == message_reaction_updated.user.id:
-            await bot.delete_message(temp_message.chat.id, temp_message.id)
             return
         karma.check_user_in_database(temp_message.reply_to_message.from_user)
         karma.check_user_in_database(message_reaction_updated.user)
         karma.change_user_karma(temp_message.reply_to_message.from_user, message_reaction_updated.user)
-        await bot.delete_message(temp_message.chat.id, temp_message.id)
         
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_CONDEMNATION_EMOJI:
         temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id)
+        await bot.delete_message(temp_message.chat.id, temp_message.id)
         if temp_message.reply_to_message.message_thread_id != globals.THREADS['SHOWCASE_THREAD'] or globals.THREADS['MATERIALS_THREAD']:
-            await bot.delete_message(temp_message.chat.id, temp_message.id)
             return
         if temp_message.reply_to_message.from_user.id == message_reaction_updated.user.id:
-            await bot.delete_message(temp_message.chat.id, temp_message.id)
             return
         karma.check_user_in_database(temp_message.reply_to_message.from_user)
         karma.check_user_in_database(message_reaction_updated.user)
         karma.change_user_karma(temp_message.reply_to_message.from_user, message_reaction_updated.user, -1)
-        await bot.delete_message(temp_message.chat.id, temp_message.id)
         
 
 @bot.message_handler(chat_types=['supergroup'], func=lambda message: True)
