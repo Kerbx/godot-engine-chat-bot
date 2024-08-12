@@ -28,14 +28,14 @@ async def get_message_reply_user(message):
         return user
     
     
-@bot.message_handler(chat_types=['private'], commands=['/start'])
+@bot.message_handler(chat_types=['private'], commands=['start'])
 async def start(message):
     await bot.send_message(message.chat.id, 'Привет, я Годетта, работаю пока что только в группе, личку не люблю...')
     
 
 @bot.message_handler(chat_types=['supergroup',], commands=['help'])
 async def help_message(message):
-    await bot.reply_to(message, f'Вот что я умею:\n\nКоманды для админов:\n/warn - выдать предупреждение нарушителю. На четвертое предупреждение я автоматически поставлю мут.\n/mute [days=int|None]- замутить персонажа.\n/unmute - помиловать нарушителя.\n/ban - просто бан.\n\nКоманды для всех:\n/stats - посмотреть свою статистику или другого человека, ответив на его сообщение.\n/help - спросить у меня, что я умею.')
+    await bot.reply_to(message, f'Вот что я умею:\n\nКоманды для админов:\n/warn - выдать предупреждение нарушителю. На четвертое предупреждение я автоматически поставлю мут.\n/mute [days=int|None]- замутить персонажа.\n/unmute - помиловать нарушителя.\n/ban - просто бан.\n\nКоманды для всех:\n/stats - посмотреть свою статистику или другого человека, ответив на его сообщение.\n/help - спросить у меня, что я умею.\nТакже я умею реагировать на ваши реакции, с помощью которых можно изменять карму другим. Работает это только в топиках Showcase и Полезные материалы.\nПовысить карму можно с помощью 👍, ❤, 🔥.\nПонизить карму можно с помощью 👎, 💩, 🤡.')
 
 
 @bot.message_handler(chat_types=['supergroup',], content_types=['new_chat_members'])
@@ -142,18 +142,50 @@ async def get_user_stats(message):
     await bot.reply_to(message, f'Карма пользователя {user.full_name} сейчас составляет {karma.get_user_karma(user)}.\nПовышал другим карму {karma.get_increase_times(user)} раз(а).\nПонижал другим карму {karma.get_decrease_times(user)} раз(а).')
 
 
+@bot.message_reaction_handler()
+async def get_reaction(message_reaction_updated):
+    if not message_reaction_updated.new_reaction:
+        return
+    if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_THANKS_EMOJI:
+        temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id)
+        if temp_message.reply_to_message.message_thread_id != globals.THREADS['SHOWCASE_THREAD'] or globals.THREADS['MATERIALS_THREAD']:
+            await bot.delete_message(temp_message.chat.id, temp_message.id)
+            return
+        if temp_message.reply_to_message.from_user.id == message_reaction_updated.user.id:
+            await bot.delete_message(temp_message.chat.id, temp_message.id)
+            return
+        karma.check_user_in_database(temp_message.reply_to_message.from_user)
+        karma.check_user_in_database(message_reaction_updated.user)
+        karma.change_user_karma(temp_message.reply_to_message.from_user, message_reaction_updated.user)
+        await bot.delete_message(temp_message.chat.id, temp_message.id)
+        
+    if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_CONDEMNATION_EMOJI:
+        temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id)
+        if temp_message.reply_to_message.message_thread_id != globals.THREADS['SHOWCASE_THREAD'] or globals.THREADS['MATERIALS_THREAD']:
+            await bot.delete_message(temp_message.chat.id, temp_message.id)
+            return
+        if temp_message.reply_to_message.from_user.id == message_reaction_updated.user.id:
+            await bot.delete_message(temp_message.chat.id, temp_message.id)
+            return
+        karma.check_user_in_database(temp_message.reply_to_message.from_user)
+        karma.check_user_in_database(message_reaction_updated.user)
+        karma.change_user_karma(temp_message.reply_to_message.from_user, message_reaction_updated.user, -1)
+        await bot.delete_message(temp_message.chat.id, temp_message.id)
+        
+
 @bot.message_handler(chat_types=['supergroup'], func=lambda message: True)
 async def listen_to_karma(message):
     # govnokod starts here.
-    print(message)
+    # if message.chat.id != config.CHAT_ID:
+    #     return
     if message.reply_to_message.forum_topic_created:
+        return
+    if message.reply_to_message.from_user.is_bot:
+        await bot.reply_to(message, "У меня отобрали карму... Мне ее нельзя менять.")
         return
     if message.text.lower().startswith(globals.KARMA_THANKS):
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самовлюбленный дурак, но не нужно этого.')
-            return
-        elif message.reply_to_message.from_user.is_bot:
-            await bot.reply_to(message, "У меня отобрали карму... Мне ее нельзя менять.")
             return
         karma.check_user_in_database(message.from_user)
         karma.check_user_in_database(message.reply_to_message.from_user)
@@ -163,9 +195,6 @@ async def listen_to_karma(message):
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самокритичный дурак, но не нужно этого.')
             return
-        elif message.reply_to_message.from_user.is_bot:
-            await bot.reply_to(message, "У меня отобрали карму... Мне ее нельзя менять.")
-            return
         karma.check_user_in_database(message.from_user)
         karma.check_user_in_database(message.reply_to_message.from_user)
         karma.change_user_karma(message.reply_to_message.from_user, message.from_user, -1)
@@ -173,5 +202,5 @@ async def listen_to_karma(message):
 
 
 if __name__ == '__main__':
-    asyncio.run(bot.infinity_polling())
+    asyncio.run(bot.infinity_polling(allowed_updates=['message_reaction', 'message', 'chat_member']))
     
