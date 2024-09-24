@@ -144,6 +144,8 @@ async def get_user_stats(message):
 
 @bot.message_reaction_handler()
 async def get_reaction(message_reaction_updated):
+    if message.chat.id != config.CHAT_ID:
+        return 
     if not message_reaction_updated.new_reaction:
         return
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_THANKS_EMOJI:
