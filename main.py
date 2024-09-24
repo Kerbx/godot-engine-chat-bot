@@ -147,7 +147,7 @@ async def get_reaction(message_reaction_updated):
     if not message_reaction_updated.new_reaction:
         return
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_THANKS_EMOJI:
-        temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id)
+        temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id, message_thread_id=1365)
         await bot.delete_message(temp_message.chat.id, temp_message.id)
         if temp_message.reply_to_message.message_thread_id != globals.THREADS['SHOWCASE_THREAD'] or globals.THREADS['MATERIALS_THREAD']:
             return
@@ -158,7 +158,7 @@ async def get_reaction(message_reaction_updated):
         karma.change_user_karma(temp_message.reply_to_message.from_user, message_reaction_updated.user)
         
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_CONDEMNATION_EMOJI:
-        temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id)
+        temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id, message_thread_id=1)
         await bot.delete_message(temp_message.chat.id, temp_message.id)
         if temp_message.reply_to_message.message_thread_id != globals.THREADS['SHOWCASE_THREAD'] or globals.THREADS['MATERIALS_THREAD']:
             return
@@ -172,8 +172,8 @@ async def get_reaction(message_reaction_updated):
 @bot.message_handler(chat_types=['supergroup'], func=lambda message: True)
 async def listen_to_karma(message):
     # govnokod starts here.
-    # if message.chat.id != config.CHAT_ID:
-    #     return
+    if message.chat.id != config.CHAT_ID:
+        return
     if message.reply_to_message.forum_topic_created:
         return
     if message.text.lower().startswith(globals.KARMA_THANKS):
