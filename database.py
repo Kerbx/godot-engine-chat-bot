@@ -20,6 +20,41 @@ class User(peewee.Model):
         database = db
         
 
+class MessageThread(peewee.Model):
+    message_id = peewee.IntegerField()
+    thread_id = peewee.IntegerField()
+    user_id = peewee.IntegerField()
+    class Meta:
+        database = db
+    
+
+def write_message_id(message_id: int, message_thread_id: int, user_id: int):
+    MessageThread.create(message_id=message_id,
+                         thread_id=message_thread_id,
+                         user_id=user_id)
+    
+
+
+def check_thread(message_id: int):
+    try:
+        message = MessageThread.select().where(MessageThread.message_id == message_id).get()
+    except Exception as exception:
+        logging.error(exception)
+        return None
+    else:
+        return message.thread_id
+    
+
+def check_user(message_id: int):
+    try:
+        message = MessageThread.select().where(MessageThread.message_id == message_id).get()
+    except Exception as exception:
+        logging.error(exception)
+        return None
+    else:
+        return message.user_id
+    
+    
 def get_warns_count(user: telebot.types.User):
     karma.check_user_in_database(user)
     _user = User.select().where(User.id == str(user.id)).get()
@@ -54,5 +89,5 @@ def clear_warns(user: telebot.types.User):
     
 if __name__ == '__main__':
     db.connect()
-    db.create_tables([User, ])
+    db.create_tables([User, MessageThread])
     

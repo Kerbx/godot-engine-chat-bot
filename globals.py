@@ -10,7 +10,7 @@ THREADS = {
     'GREETING_THREAD': 1365,
     'SHOWCASE_THREAD': 24,
     'MATERIALS_THREAD': 6,
-    '': None,
+    'LUK': 6121930188,
 }
 
 KARMA_THANKS = (

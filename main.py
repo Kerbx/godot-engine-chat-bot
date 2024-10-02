@@ -144,36 +144,43 @@ async def get_user_stats(message):
 
 @bot.message_reaction_handler()
 async def get_reaction(message_reaction_updated):
-    if message.chat.id != config.CHAT_ID:
+    if message_reaction_updated.chat.id != config.CHAT_ID:
         return 
     if not message_reaction_updated.new_reaction:
         return
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_THANKS_EMOJI:
-        temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id, message_thread_id=1365)
-        await bot.delete_message(temp_message.chat.id, temp_message.id)
-        if temp_message.reply_to_message.message_thread_id != globals.THREADS['SHOWCASE_THREAD'] or globals.THREADS['MATERIALS_THREAD']:
+        if not database.check_thread(message_reaction_updated.message_id):
+            print(message_reaction_updated.message_id)
+            print('not in db')
             return
-        if temp_message.reply_to_message.from_user.id == message_reaction_updated.user.id:
+        if database.check_thread(message_reaction_updated.message_id) != globals.THREADS['SHOWCASE_THREAD'] and database.check_thread(message_reaction_updated.message_id) != globals.THREADS['MATERIALS_THREAD']:
+            print('thread exc')
             return
-        karma.check_user_in_database(temp_message.reply_to_message.from_user)
+        if database.check_user(message_reaction_updated.message_id) == message_reaction_updated.user.id:
+            return
+        _user = await bot.get_chat_member(message_reaction_updated.chat.id,
+                                        database.check_user(message_reaction_updated.message_id))
+        karma.check_user_in_database(_user.user)
         karma.check_user_in_database(message_reaction_updated.user)
-        karma.change_user_karma(temp_message.reply_to_message.from_user, message_reaction_updated.user)
-        
+        karma.change_user_karma(_user.user, message_reaction_updated.user)
+        print('worked???')
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_CONDEMNATION_EMOJI:
-        temp_message = await bot.send_message(message_reaction_updated.chat.id, 'ы', reply_to_message_id=message_reaction_updated.message_id, message_thread_id=1)
-        await bot.delete_message(temp_message.chat.id, temp_message.id)
-        if temp_message.reply_to_message.message_thread_id != globals.THREADS['SHOWCASE_THREAD'] or globals.THREADS['MATERIALS_THREAD']:
+        if not database.check_thread(message_reaction_updated.message_id):
             return
-        if temp_message.reply_to_message.from_user.id == message_reaction_updated.user.id:
+        if database.check_thread(message_reaction_updated.message_id) != globals.THREADS['SHOWCASE_THREAD'] and globals.THREADS['MATERIALS_THREAD']:
             return
-        karma.check_user_in_database(temp_message.reply_to_message.from_user)
+        if database.check_user(message_reaction_updated.message_id) == message_reaction_updated.user.id:
+            return
+        karma.check_user_in_database(await bot.get_chat_member(message_reaction_updated.chat.id,
+                                                               database.check_user(message_reaction_updated.message_id)))
         karma.check_user_in_database(message_reaction_updated.user)
-        karma.change_user_karma(temp_message.reply_to_message.from_user, message_reaction_updated.user, -1)
-        
+        karma.change_user_karma(await bot.get_chat_member(message_reaction_updated.chat.id,
+                                                        database.check_user(message_reaction_updated.message_id)),
+                                message_reaction_updated.user, -1)
 
 @bot.message_handler(chat_types=['supergroup'], func=lambda message: True)
 async def listen_to_karma(message):
-    # govnokod starts here.
+    database.write_message_id(int(message.message_id), int(message.message_thread_id), int(message.from_user.id))
     if message.chat.id != config.CHAT_ID:
         return
     if message.reply_to_message.forum_topic_created:
