@@ -178,6 +178,12 @@ async def get_reaction(message_reaction_updated):
                                                         database.check_user(message_reaction_updated.message_id)),
                                 message_reaction_updated.user, -1)
 
+
+@bot.channel_post_handler(func=lambda message: True)
+async def listen_to_posts(message):
+    print('goida', message)
+    
+    
 @bot.message_handler(func=lambda message: True)
 async def listen_to_karma(message):
     logging.info(f'{message}\n\n\n{message.message_id}\n\n\n{message.message_thread_id}\n\n\n{message.from_user.id}')
