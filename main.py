@@ -178,8 +178,9 @@ async def get_reaction(message_reaction_updated):
                                                         database.check_user(message_reaction_updated.message_id)),
                                 message_reaction_updated.user, -1)
 
-@bot.message_handler(chat_types=['supergroup'], func=lambda message: True)
+@bot.message_handler(func=lambda message: True)
 async def listen_to_karma(message):
+    logging.info(f'{message}\n\n\n{message.message_id}\n\n\n{message.message_thread_id}\n\n\n{message.from_user.id}')
     database.write_message_id(int(message.message_id), int(message.message_thread_id), int(message.from_user.id))
     if message.chat.id != config.CHAT_ID:
         return
