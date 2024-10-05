@@ -38,6 +38,11 @@ async def help_message(message):
     await bot.reply_to(message, f'Вот что я умею:\n\nКоманды для админов:\n/warn - выдать предупреждение нарушителю. На четвертое предупреждение я автоматически поставлю мут.\n/mute [days=int|None]- замутить персонажа.\n/unmute - помиловать нарушителя.\n/ban - просто бан.\n\nКоманды для всех:\n/stats - посмотреть свою статистику или другого человека, ответив на его сообщение.\n/help - спросить у меня, что я умею.\nТакже я умею реагировать на ваши реакции, с помощью которых можно изменять карму другим. Работает это только в топиках Showcase и Полезные материалы.\nПовысить карму можно с помощью 👍, ❤, 🔥.\nПонизить карму можно с помощью 👎, 💩, 🤡.')
 
 
+@bot.message_handler(commands=['give_me_answer'])
+async def aboba(message):
+    logging.info(f'DEBUG: \n\n\n{message.reply_to_message}')
+
+
 @bot.message_handler(chat_types=['supergroup',], content_types=['new_chat_members'])
 async def welcome_message(message):
     await bot.delete_message(message.chat.id, message.id)
@@ -179,12 +184,7 @@ async def get_reaction(message_reaction_updated):
                                 message_reaction_updated.user, -1)
 
 
-@bot.channel_post_handler(func=lambda message: True)
-async def listen_to_posts(message):
-    print('goida', message)
-    
-    
-@bot.message_handler(func=lambda message: True)
+@bot.message_handler(content_types=['text', 'video', 'photo', 'document', 'audio'], func=lambda message: True)
 async def listen_to_karma(message):
     logging.info(f'{message}\n\n\n{message.message_id}\n\n\n{message.message_thread_id}\n\n\n{message.from_user.id}')
     database.write_message_id(int(message.message_id), int(message.message_thread_id), int(message.from_user.id))
@@ -217,5 +217,5 @@ async def listen_to_karma(message):
 
 
 if __name__ == '__main__':
-    asyncio.run(bot.infinity_polling(allowed_updates=['message_reaction', 'message', 'chat_member']))
+    asyncio.run(bot.infinity_polling(allowed_updates=['message_reaction', 'message', 'chat_member', 'edited_message', 'channel_post',]))
     
