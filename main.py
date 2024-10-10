@@ -183,7 +183,6 @@ async def get_reaction(message_reaction_updated):
 async def listen_to_karma(message):
     if message.chat.id != config.CHAT_ID:
         return
-    logging.info(f'{message}\n\n\n{message.message_id}\n\n\n{message.message_thread_id}\n\n\n{message.from_user.id}')
     database.write_message_id(int(message.message_id), int(message.message_thread_id), int(message.from_user.id))
     if message.reply_to_message.forum_topic_created:
         return
