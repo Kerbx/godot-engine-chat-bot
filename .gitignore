@@ -1,0 +1,4 @@
+__pycache__/
+*.log
+config.py
+users.db
