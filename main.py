@@ -8,7 +8,6 @@ import datetime
 import logging
 import re
 import telebot.async_telebot
-import string
 
 
 logging.basicConfig(level=logging.INFO, filename="epta_logi.log",filemode="a",
@@ -142,6 +141,24 @@ async def get_user_stats(message):
     await bot.reply_to(message, f'Карма пользователя {user.full_name} сейчас составляет {karma.get_user_karma(user)}.\nПовышал другим карму {karma.get_increase_times(user)} раз(а).\nПонижал другим карму {karma.get_decrease_times(user)} раз(а).')
 
 
+@bot.message_handler(chat_types=['supergroup'], command=['top'])
+async def get_top_users(message):
+    top_users = karma.get_top_users('desc')
+    top_users_list = ''
+    for user in top_users:
+        top_users_list += f'\n[{user.name}] \- (tg://user?id={user.id})'
+    await bot.reply_to(message, f'Вот 🔥топ🔥 пользоваталей по карме:\n{top_users_list}', parse_mode='MarkdownV2')
+    
+    
+@bot.message_handler(chat_types=['supergroup'], commands=['antitop'])
+async def get_antitop_users(message):
+    antitop_users = karma.get_top_users('asc')
+    antitop_users_list = ''
+    for user in antitop_users:
+        antitop_users_list += f'\n[{user.name}] \- (tg://user?id={user.id})'
+    await bot.reply_to(message, f'Вот 👎АНТИтоп👎 пользоваталей по карме:\n{antitop_users_list}', parse_mode='MarkdownV2')
+    
+    
 @bot.message_reaction_handler()
 async def get_reaction(message_reaction_updated):
     if message_reaction_updated.chat.id != config.CHAT_ID:
@@ -151,10 +168,8 @@ async def get_reaction(message_reaction_updated):
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_THANKS_EMOJI:
         if not database.check_thread(message_reaction_updated.message_id):
             print(message_reaction_updated.message_id)
-            print('not in db')
             return
         if database.check_thread(message_reaction_updated.message_id) != globals.THREADS['SHOWCASE_THREAD'] and database.check_thread(message_reaction_updated.message_id) != globals.THREADS['MATERIALS_THREAD']:
-            print('thread exc')
             return
         if database.check_user(message_reaction_updated.message_id) == message_reaction_updated.user.id:
             return
@@ -163,7 +178,6 @@ async def get_reaction(message_reaction_updated):
         karma.check_user_in_database(_user.user)
         karma.check_user_in_database(message_reaction_updated.user)
         karma.change_user_karma(_user.user, message_reaction_updated.user)
-        print('worked???')
     if message_reaction_updated.new_reaction[0].emoji in globals.KARMA_CONDEMNATION_EMOJI:
         if not database.check_thread(message_reaction_updated.message_id):
             return

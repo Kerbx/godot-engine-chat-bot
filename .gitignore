@@ -1,4 +1,8 @@
 __pycache__/
 *.log
+.dockeringore
 config.py
 users.db
+Dockerfile
+Makefile
+.dockerignore
