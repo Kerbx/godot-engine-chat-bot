@@ -114,4 +114,17 @@ def change_user_karma(target_user: telebot.types.User, from_user: telebot.types.
         logging.info(f"Changed karma for user: {target_user.full_name}, now karma = {_target_user.karma}")
     except Exception as exception:
         logging.error(exception)
+
+
+def get_top_users(sort: str = 'asc'):
+    """func to get top of users.
+    
+    args:
+        sort (str): sorting method (asc, desc).
+    """
+    if sort == 'asc':
+        top_users = database.User.select().order_by(database.User.karma.asc()).limit(15)
+    elif sort == 'desc':
+        top_users = database.User.select().order_by(database.User.karma.desc()).limit(15)
         
+    return top_users
