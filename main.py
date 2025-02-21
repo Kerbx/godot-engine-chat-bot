@@ -7,6 +7,8 @@ import asyncio
 import datetime
 import logging
 import re
+import requests
+import json
 import telebot.async_telebot
 
 
@@ -16,6 +18,28 @@ logging.basicConfig(level=logging.INFO, filename="epta_logi.log",filemode="a",
 bot = telebot.async_telebot.AsyncTeleBot(config.BOT_TOKEN)
 
 
+async def send_llm_request_to_godochka(text: str):
+    return requests.post(
+    url="https://openrouter.ai/api/v1/chat/completions",
+    headers={
+      "Authorization": f"Bearer {config.OPENROUTER_API_KEY}",
+    },
+    data=json.dumps({
+      "model": "google/gemma-2-9b-it",
+      "messages": [
+        {"role": "system", "content": f"Ты очень полезный бот в чате, посвященному игровому движку Godot. Тебя создал Егор Лукич, ты милый технарь, любишь помогать и болтать на разные темы. Ты милфа 30-ти лет, самый настоящий технарь, который не прочь покопаться в различных движках и быть по локти в масле."},
+        {"role": "user", "content": f"{text}"},
+      ],
+      "top_p": 0.75,
+      "temperature": 0.7,
+      "frequency_penalty": 1.1,
+      "presence_penalty": 1.1,
+      "repetition_penalty": 1,
+      "top_k": 0,
+    })
+  )
+    
+    
 async def get_message_reply_user(message):
     user = None
     if not message.reply_to_message.text:
@@ -29,7 +53,7 @@ async def get_message_reply_user(message):
     
 @bot.message_handler(chat_types=['private'], commands=['start'])
 async def start(message):
-    await bot.send_message(message.chat.id, 'Привет, я Годетта, работаю пока что только в группе, личку не люблю...')
+    await bot.send_message(message.chat.id, 'Привет, я Годочка, работаю пока что только в группе, личку не люблю...')
     
 
 @bot.message_handler(chat_types=['supergroup',], commands=['help'])
@@ -145,18 +169,22 @@ async def get_user_stats(message):
 async def get_top_users(message):
     top_users = karma.get_top_users('desc')
     top_users_list = ''
+    i = 1
     for user in top_users:
-        top_users_list += f'\n{user.name} - {user.karma}'
-    await bot.reply_to(message, f'Вот 🔥топ🔥 пользоваталей по карме:\n{top_users_list}')
+        top_users_list += f"\n{i}. <a href='tg://user?id={user.id}'>{user.name}</a>: +{user.karma}"
+        i += 1
+    await bot.reply_to(message, f'🔥Вот ТОП пользоваталей по карме🔥\n{top_users_list}', parse_mode='HTML', disable_notification=True)
     
     
 @bot.message_handler(chat_types=['supergroup'], commands=['antitop'])
 async def get_antitop_users(message):
     antitop_users = karma.get_top_users('asc')
     antitop_users_list = ''
+    i = 1
     for user in antitop_users:
-        antitop_users_list += f'\n{user.name} - {user.karma}'
-    await bot.reply_to(message, f'Вот 👎АНТИтоп👎 пользоваталей по карме:\n{antitop_users_list}')
+        antitop_users_list += f"\n{i}<a href='tg://user?id={user.id}'>{user.name}</a>: +{user.karma}"
+        i += 1
+    await bot.reply_to(message, f'👎Вот АНТИТОП пользоваталей по карме👎\n{antitop_users_list}', parse_mode='HTML', disable_notification=True)
     
     
 @bot.message_reaction_handler()
@@ -198,6 +226,11 @@ async def listen_to_karma(message):
     if message.chat.id != config.CHAT_ID:
         return
     database.write_message_id(int(message.message_id), int(message.message_thread_id), int(message.from_user.id))
+    if message.text.lower().startswith('годочка'):
+        response = await send_llm_request_to_godochka(message.text)
+        print(response)
+        await bot.reply_to(message, f'{dict(response.json())["choices"][0]["message"]["content"]}')
+
     if message.reply_to_message.forum_topic_created:
         return
     if message.text.lower().startswith(globals.KARMA_THANKS):
@@ -213,7 +246,7 @@ async def listen_to_karma(message):
         await bot.reply_to(message, f'{message.from_user.first_name} ({karma.get_user_karma(message.from_user)}) повысил карму {message.reply_to_message.from_user.first_name} ({karma.get_user_karma(message.reply_to_message.from_user)}).')
     elif message.text.lower().startswith(globals.KARMA_CONDEMNATION):
         if message.reply_to_message.from_user.is_bot:
-            await bot.reply_to(message, "У меня отобрали карму... Мне ее нельзя менять.")
+            await bot.reply_to(message, "У ботов не может быть кармы. Было бы глупо.")
             return
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самокритичный дурак, но не нужно этого.')
@@ -222,8 +255,8 @@ async def listen_to_karma(message):
         karma.check_user_in_database(message.reply_to_message.from_user)
         karma.change_user_karma(message.reply_to_message.from_user, message.from_user, -1)
         await bot.reply_to(message, f'{message.from_user.first_name} ({karma.get_user_karma(message.from_user)}) понизил карму {message.reply_to_message.from_user.first_name} ({karma.get_user_karma(message.reply_to_message.from_user)}).')
-
-
+    
+    
 if __name__ == '__main__':
     asyncio.run(bot.infinity_polling(allowed_updates=['message_reaction', 'message', 'chat_member', 'edited_message', 'channel_post',]))
     
