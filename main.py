@@ -141,13 +141,13 @@ async def get_user_stats(message):
     await bot.reply_to(message, f'Карма пользователя {user.full_name} сейчас составляет {karma.get_user_karma(user)}.\nПовышал другим карму {karma.get_increase_times(user)} раз(а).\nПонижал другим карму {karma.get_decrease_times(user)} раз(а).')
 
 
-@bot.message_handler(chat_types=['supergroup'], command=['top'])
+@bot.message_handler(chat_types=['supergroup'], commands=['top'])
 async def get_top_users(message):
     top_users = karma.get_top_users('desc')
     top_users_list = ''
     for user in top_users:
-        top_users_list += f'\n[{user.name}] \- (tg://user?id={user.id})'
-    await bot.reply_to(message, f'Вот 🔥топ🔥 пользоваталей по карме:\n{top_users_list}', parse_mode='MarkdownV2')
+        top_users_list += f'\n{user.name} - {user.karma}'
+    await bot.reply_to(message, f'Вот 🔥топ🔥 пользоваталей по карме:\n{top_users_list}')
     
     
 @bot.message_handler(chat_types=['supergroup'], commands=['antitop'])
@@ -155,8 +155,8 @@ async def get_antitop_users(message):
     antitop_users = karma.get_top_users('asc')
     antitop_users_list = ''
     for user in antitop_users:
-        antitop_users_list += f'\n[{user.name}] \- (tg://user?id={user.id})'
-    await bot.reply_to(message, f'Вот 👎АНТИтоп👎 пользоваталей по карме:\n{antitop_users_list}', parse_mode='MarkdownV2')
+        antitop_users_list += f'\n{user.name} - {user.karma}'
+    await bot.reply_to(message, f'Вот 👎АНТИтоп👎 пользоваталей по карме:\n{antitop_users_list}')
     
     
 @bot.message_reaction_handler()
