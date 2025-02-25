@@ -228,7 +228,7 @@ async def listen_to_karma(message):
     database.write_message_id(int(message.message_id), int(message.message_thread_id), int(message.from_user.id))
     if message.text.lower().startswith('годочка'):
         response = await send_llm_request_to_godochka(message.text)
-	response = dict(response.json())["choices"][0]["message"]["content"]
+        response = dict(response.json())["choices"][0]["message"]["content"]
         await bot.reply_to(message, f'{response}', parse_mode="MarkdownV2")
 
     if message.reply_to_message.forum_topic_created:
