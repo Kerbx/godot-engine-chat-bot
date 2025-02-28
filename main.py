@@ -182,7 +182,7 @@ async def get_antitop_users(message):
     antitop_users_list = ''
     i = 1
     for user in antitop_users:
-        antitop_users_list += f"\n{i}<a href='tg://user?id={user.id}'>{user.name}</a>: +{user.karma}"
+        antitop_users_list += f"\n{i}<a href='tg://user?id={user.id}'>{user.name}</a>: {user.karma}"
         i += 1
     await bot.reply_to(message, f'👎Вот АНТИТОП пользоваталей по карме👎\n{antitop_users_list}', parse_mode='HTML', disable_notification=True)
     

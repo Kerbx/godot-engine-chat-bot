@@ -123,8 +123,8 @@ def get_top_users(sort: str = 'asc'):
         sort (str): sorting method (asc, desc).
     """
     if sort == 'asc':
-        top_users = database.User.select().order_by(database.User.karma.asc()).limit(15)
+        top_users = database.User.select().where(database.User.karma != 0).order_by(database.User.karma.asc()).limit(15)
     elif sort == 'desc':
-        top_users = database.User.select().order_by(database.User.karma.desc()).limit(15)
+        top_users = database.User.select().where(database.User.karma != 0).order_by(database.User.karma.desc()).limit(15)
         
     return top_users
