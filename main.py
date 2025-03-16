@@ -186,6 +186,12 @@ async def get_antitop_users(message):
         i += 1
     await bot.reply_to(message, f'👎Вот АНТИТОП пользоваталей по карме👎\n{antitop_users_list}', parse_mode='HTML', disable_notification=True)
     
+
+@bot.message_handler(chat_types=['supergroup'], commands=['me'])
+async def me_command(message):
+    await bot.send_message(message.chat.id, f"<i><b>{message.from_user.first_name}</b>{message.text.replace('/me', '')}</i>", parse_mode='HTML', message_thread_id=message.message_thread_id)
+    await bot.delete_message(message.chat.id, message.id)
+    
     
 @bot.message_reaction_handler()
 async def get_reaction(message_reaction_updated):
