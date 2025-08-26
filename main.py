@@ -72,19 +72,19 @@ async def welcome_message(message):
     try:
         # TODO: get greeting message id to delete this shit after time.
         # delete_message() with timeout agrument does not work. mb stupid me idk.
-        greeting_text = f"""Приветствую, [{message.from_user.first_name}](tg://user?id={message.from_user.id})\!
-                        \nПожалуйста, ознакомься с [правилами](https://t.me/godot_help_ru/35/36)\."""
+        name = re.sub(r'<', '&lt', message.from_user.first_name)
+        name = re.sub(r'>', '&gt', name)
+        logging.info(name)
+        greeting_text = f"""Приветствую, <a href="tg://user?id={message.from_user.id}">{name}</a>!
+                        \nПожалуйста, ознакомься с <a href="https://t.me/godot_help_ru/35/36)">правилами</a>."""
         await bot.send_message(message.chat.id,
                                 message_thread_id=globals.THREADS.get('GREETING_THREAD'),
                                 text=greeting_text,
-                                parse_mode='MarkdownV2',
+                                parse_mode='HTML',
                                 link_preview_options=telebot.types.LinkPreviewOptions(False))
     except Exception as exception:
         logging.exception(exception)
-        await bot.send_message(message.chat.id,
-                               message_thread_id=globals.THREADS.get('GREETING_THREAD'),
-                               text="Упс, что-то пошло не так!")
-        
+
 
 @bot.message_handler(chat_types=['supergroup',], content_types=['left_chat_member'])
 async def clear_leave_message(message):
