@@ -51,19 +51,22 @@ async def get_message_reply_user(message):
         return user
     
 
-async def check_week_day():
+async def check_week_day(message):
     users = database.get_all_users()
     for user in users:
         try:
             _user = await bot.get_chat_member(config.CHAT_ID, user.id)
+            await bot.reply_to(message, f'Пользователь {user.name}, id {user.id}, usrnm {_user.user.username}')
         except Exception as e:
             logging.error(e)
             continue
         try:
             if not _user.user.first_name and not _user.user.username:
                 await bot.ban_chat_member(config.CHAT_ID, user.id)
+                await bot.reply_to(message, f'Удалила {user.name}')
         except Exception as e:
             logging.error(e)
+            await bot.reply_to(message, f'Не получилось, ошибка {e.with_traceback()}')
             return
         
         
@@ -211,7 +214,7 @@ async def me_command(message):
 
 @bot.message_handler(chat_types=['supergroup'], commands=['bananza'])
 async def bananza(message):
-    await check_week_day()
+    await check_week_day(message)
     
      
 @bot.message_reaction_handler()
