@@ -56,9 +56,17 @@ async def check_week_day():
         logging.warning(f"DAY: {datetime.date.weekday(datetime.date.today())}")
         users = database.get_all_users()
         for user in users:
-            _user = await bot.get_chat_member(config.CHAT_ID, user.id)
-            if not _user.user.first_name and not _user.user.username:
-                await bot.ban_chat_member(config.CHAT_ID, user.id)
+            try:
+                _user = await bot.get_chat_member(config.CHAT_ID, user.id)
+            except Exception as e:
+                logging.error(e)
+                return
+            try:
+                if not _user.user.first_name and not _user.user.username:
+                    await bot.ban_chat_member(config.CHAT_ID, user.id)
+            except Exception as e:
+                logging.error(e)
+                return
         
         
 @bot.message_handler(chat_types=['private'], commands=['start'])
