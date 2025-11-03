@@ -50,12 +50,22 @@ async def get_message_reply_user(message):
             return None
         return user
     
-    
+
+async def check_week_day():
+    if datetime.date.weekday(datetime.date.today()) == 0:
+        logging.warning(f"DAY: {datetime.date.weekday(datetime.date.today())}")
+        users = database.get_all_users()
+        for user in users:
+            _user = await bot.get_chat_member(config.CHAT_ID, user.id)
+            if not _user.user.first_name and not _user.user.username:
+                await bot.ban_chat_member(config.CHAT_ID, user.id)
+        
+        
 @bot.message_handler(chat_types=['private'], commands=['start'])
 async def start(message):
     await bot.send_message(message.chat.id, 'Привет, я Годочка, работаю пока что только в группе, личку не люблю...')
     
-
+    
 @bot.message_handler(chat_types=['supergroup',], commands=['help'])
 async def help_message(message):
     await bot.reply_to(message, f'В данном чате присутствует возможность повысить другим <b>карму</b>.\nДля этого необходимо ответить на сообщение человека, а в <u>начале</u> написать: <blockquote>+, спасибо, благодарю, спс и т.п.</blockquote>\n\nТакже я умею реагировать на ваши реакции, с помощью которых можно изменять карму другим. Работает это <b>только</b> в топиках <u>Showcase</u> и <u>Полезные материалы</u>.\nПовысить карму можно с помощью 👍, ❤, 🔥.\nПонизить карму можно с помощью 👎, 💩, 🤡.\n\nКоманды для всех:\n<blockquote>/stats - посмотреть свою статистику или другого человека, ответив на его сообщение.\n/top - вывести ТОП пользователей по карме.\n/antitop - вывести АНТИТОП пользователей по карме.\n/help - спросить у меня, что я умею.</blockquote>\n\nКоманды для админов:\n<blockquote>/warn - выдать предупреждение нарушителю. На четвертое предупреждение я автоматически поставлю мут.\n/mute [days=int|None]- замутить персонажа.\n/unmute - помиловать нарушителя.\n/ban - просто бан.</blockquote>', parse_mode='HTML')
@@ -140,7 +150,7 @@ async def unmute_user(message):
             return
         database.clear_warns(message.reply_to_message.from_user)
         await bot.restrict_chat_member(message.chat.id, message.reply_to_message.from_user.id, None,
-                                       True, True, True, True)
+                                       True, True, True, True, None, None, True, None)
         await bot.reply_to(message, f'Так и быть, выходи из молчанки, [{message.reply_to_message.from_user.first_name}](tg://user?id={message.reply_to_message.from_user.id})\.',
                            parse_mode='MarkdownV2')
         
@@ -229,19 +239,20 @@ async def get_reaction(message_reaction_updated):
 
 @bot.message_handler(content_types=['text', 'video', 'photo', 'document', 'audio'], func=lambda message: True)
 async def listen_to_karma(message):
+    await check_week_day()
     if message.chat.id != config.CHAT_ID:
         return
     database.write_message_id(int(message.message_id), int(message.message_thread_id), int(message.from_user.id))
-    if message.text.lower().startswith('годочка'):
-        response = await send_llm_request_to_godochka(message.text)
-        response = dict(response.json())["choices"][0]["message"]["content"]
-        await bot.reply_to(message, f'{response}', parse_mode="MarkdownV2")
+    # if message.text.lower().startswith('годочка'):
+    #     response = await send_llm_request_to_godochka(message.text)
+    #     response = dict(response.json())["choices"][0]["message"]["content"]
+    #     await bot.reply_to(message, f'{response}', parse_mode="MarkdownV2")
 
     if message.reply_to_message.forum_topic_created:
         return
     if message.text.lower().startswith(globals.KARMA_THANKS):
         if message.reply_to_message.from_user.is_bot:
-            await bot.reply_to(message, "У меня отобрали карму... Мне ее нельзя менять.")
+            await bot.reply_to(message, "Ботам не нужна карма, им нужен секс.")
             return
         if message.from_user.id == message.reply_to_message.from_user.id:
             await bot.reply_to(message, 'Я понимаю, что ты самовлюбленный дурак, но не нужно этого.')

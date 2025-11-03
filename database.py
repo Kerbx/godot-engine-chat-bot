@@ -34,7 +34,6 @@ def write_message_id(message_id: int, message_thread_id: int, user_id: int):
                          user_id=user_id)
     
 
-
 def check_thread(message_id: int):
     try:
         message = MessageThread.select().where(MessageThread.message_id == message_id).get()
@@ -85,6 +84,11 @@ def clear_warns(user: telebot.types.User):
         logging.info(f'User {user.full_name} forgiven.')
     except Exception as exception:
         logging.error(exception)
+    
+
+def get_all_users():
+    users = [user for user in User.select()]
+    return users
     
     
 if __name__ == '__main__':
