@@ -6,6 +6,7 @@ import karma
 import asyncio
 import datetime
 import logging
+import random
 import re
 import requests
 import json
@@ -49,17 +50,6 @@ async def get_message_reply_user(message):
         if message.reply_to_message.from_user.is_bot:
             return None
         return user
-    
-
-async def check_week_day(message):
-    users = database.get_all_users()
-    for user in users:
-        try:
-            _user = await bot.get_chat_member(config.CHAT_ID, user.id)
-            if _user.is_deleted:
-                await bot.reply_to(message, f'{_user.user.first_name} удаленный акк.')
-        except Exception as e:
-            await bot.reply_to(message, f'{e}')
         
         
 @bot.message_handler(chat_types=['private'], commands=['start'])
@@ -206,7 +196,17 @@ async def me_command(message):
 
 @bot.message_handler(chat_types=['supergroup'], commands=['bananza'])
 async def bananza(message):
-    await check_week_day(message)
+    random.seed()
+    num = random.randint(1, 3)
+    if num == 1:
+        if await get_message_reply_user():
+            await bot.reply_to(message, f'Ты попал своей 🍌БАНАНЗОЙ🍌 в {message.reply_to_message.from_user.first_name}!')
+        else:
+            await bot.reply_to(message, f'Ты попал своей 🍌БАНАНЗОЙ🍌 в админа!!!🍌🍌🍌')
+    elif num == 2:
+        await bot.reply_to(message, f'У тебя не встала бананза, попробуй позже...')
+    elif num == 3:
+        await bot.reply_to(message, f'Ты промахнулся своей 🍌БАНАНЗОЙ🍌 и она прилетела обратно в тебя!🍌🍌🍌')
     
      
 @bot.message_reaction_handler()
