@@ -52,21 +52,19 @@ async def get_message_reply_user(message):
     
 
 async def check_week_day():
-    if datetime.date.weekday(datetime.date.today()) == 0:
-        logging.warning(f"DAY: {datetime.date.weekday(datetime.date.today())}")
-        users = database.get_all_users()
-        for user in users:
-            try:
-                _user = await bot.get_chat_member(config.CHAT_ID, user.id)
-            except Exception as e:
-                logging.error(e)
-                continue
-            try:
-                if not _user.user.first_name and not _user.user.username:
-                    await bot.ban_chat_member(config.CHAT_ID, user.id)
-            except Exception as e:
-                logging.error(e)
-                return
+    users = database.get_all_users()
+    for user in users:
+        try:
+            _user = await bot.get_chat_member(config.CHAT_ID, user.id)
+        except Exception as e:
+            logging.error(e)
+            continue
+        try:
+            if not _user.user.first_name and not _user.user.username:
+                await bot.ban_chat_member(config.CHAT_ID, user.id)
+        except Exception as e:
+            logging.error(e)
+            return
         
         
 @bot.message_handler(chat_types=['private'], commands=['start'])
@@ -210,7 +208,12 @@ async def me_command(message):
     await bot.send_message(message.chat.id, f"<i><b>{message.from_user.first_name}</b>{message.text.replace('/me', '')}</i>", parse_mode='HTML', message_thread_id=message.message_thread_id)
     await bot.delete_message(message.chat.id, message.id)
     
+
+@bot.message_handler(chat_types=['supergroup'], commands=['bananza'])
+async def bananza(message):
+    await check_week_day()
     
+     
 @bot.message_reaction_handler()
 async def get_reaction(message_reaction_updated):
     if message_reaction_updated.chat.id != config.CHAT_ID:
@@ -247,7 +250,6 @@ async def get_reaction(message_reaction_updated):
 
 @bot.message_handler(content_types=['text', 'video', 'photo', 'document', 'audio'], func=lambda message: True)
 async def listen_to_karma(message):
-    await check_week_day()
     if message.chat.id != config.CHAT_ID:
         return
     database.write_message_id(int(message.message_id), int(message.message_thread_id), int(message.from_user.id))
