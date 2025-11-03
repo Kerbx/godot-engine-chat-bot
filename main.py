@@ -56,18 +56,10 @@ async def check_week_day(message):
     for user in users:
         try:
             _user = await bot.get_chat_member(config.CHAT_ID, user.id)
-            await bot.reply_to(message, f'Пользователь {user.name}, id {user.id}, usrnm {_user.user.username}')
+            if _user.is_deleted:
+                await bot.reply_to(message, f'{_user.user.first_name} удаленный акк.')
         except Exception as e:
-            logging.error(e)
-            continue
-        try:
-            if not _user.user.first_name and not _user.user.username:
-                await bot.ban_chat_member(config.CHAT_ID, user.id)
-                await bot.reply_to(message, f'Удалила {user.name}')
-        except Exception as e:
-            logging.error(e)
-            await bot.reply_to(message, f'Не получилось, ошибка {e.with_traceback()}')
-            return
+            await bot.reply_to(message, f'{e}')
         
         
 @bot.message_handler(chat_types=['private'], commands=['start'])
