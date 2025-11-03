@@ -60,7 +60,7 @@ async def check_week_day():
                 _user = await bot.get_chat_member(config.CHAT_ID, user.id)
             except Exception as e:
                 logging.error(e)
-                return
+                continue
             try:
                 if not _user.user.first_name and not _user.user.username:
                     await bot.ban_chat_member(config.CHAT_ID, user.id)
