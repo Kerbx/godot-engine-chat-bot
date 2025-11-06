@@ -197,9 +197,10 @@ async def me_command(message):
 @bot.message_handler(chat_types=['supergroup'], commands=['bananza'])
 async def bananza(message):
     num = random.randint(1, 3)
+    print(num)
     match num:
         case 1:
-            if await get_message_reply_user():
+            if await get_message_reply_user(message):
                 await bot.reply_to(message, f'Ты попал своей 🍌БАНАНЗОЙ🍌 в {message.reply_to_message.from_user.first_name}!')
             else:
                 await bot.reply_to(message, f'Ты попал своей 🍌БАНАНЗОЙ🍌 в админа!!!🍌🍌🍌')
