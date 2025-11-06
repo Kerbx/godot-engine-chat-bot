@@ -196,17 +196,17 @@ async def me_command(message):
 
 @bot.message_handler(chat_types=['supergroup'], commands=['bananza'])
 async def bananza(message):
-    random.seed()
     num = random.randint(1, 3)
-    if num == 1:
-        if await get_message_reply_user():
-            await bot.reply_to(message, f'Ты попал своей 🍌БАНАНЗОЙ🍌 в {message.reply_to_message.from_user.first_name}!')
-        else:
-            await bot.reply_to(message, f'Ты попал своей 🍌БАНАНЗОЙ🍌 в админа!!!🍌🍌🍌')
-    elif num == 2:
-        await bot.reply_to(message, f'У тебя не встала бананза, попробуй позже...')
-    elif num == 3:
-        await bot.reply_to(message, f'Ты промахнулся своей 🍌БАНАНЗОЙ🍌 и она прилетела обратно в тебя!🍌🍌🍌')
+    match num:
+        case 1:
+            if await get_message_reply_user():
+                await bot.reply_to(message, f'Ты попал своей 🍌БАНАНЗОЙ🍌 в {message.reply_to_message.from_user.first_name}!')
+            else:
+                await bot.reply_to(message, f'Ты попал своей 🍌БАНАНЗОЙ🍌 в админа!!!🍌🍌🍌')
+        case 2:
+            await bot.reply_to(message, f'У тебя не встала бананза, попробуй позже...')
+        case 3:
+            await bot.reply_to(message, f'Ты промахнулся своей 🍌БАНАНЗОЙ🍌 и она прилетела обратно в тебя!🍌🍌🍌')
     
      
 @bot.message_reaction_handler()
